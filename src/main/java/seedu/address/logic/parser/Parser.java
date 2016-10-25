@@ -1,7 +1,6 @@
 package seedu.address.logic.parser;
 import static seedu.address.commons.core.Messages.*;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -275,7 +274,9 @@ public class Parser {
     private Command prepareAddNonFloatingByDate(Matcher matcher) throws IllegalValueException {
         String endInput = matcher.group("deadline");
         RecurringType recurringType = checkForRecurringTask(endInput);
-        if(recurringType == RecurringType.IGNORED) recurringType = RecurringType.NONE;
+        if(recurringType == RecurringType.IGNORED) {
+        	recurringType = RecurringType.NONE;
+        }
         try{
         return new AddNonFloatingCommand(
                 matcher.group("name"),
@@ -302,7 +303,9 @@ public class Parser {
         String startInput = matcher.group("startTime");
         String endInput = matcher.group("endTime");
         RecurringType recurringType = checkForRecurringTask(endInput);
-        if(recurringType == RecurringType.IGNORED) recurringType = RecurringType.NONE;
+        if(recurringType == RecurringType.IGNORED){ 
+        	recurringType = RecurringType.NONE;
+        }
         try {
         return new AddNonFloatingCommand(
                 matcher.group("name"),
@@ -589,9 +592,10 @@ public class Parser {
         	String[] words = taskName.split(" ");
         	String lastWord = words[words.length - 1];
         	recurringType = checkForRecurringTask(lastWord);
-        	if(recurringType != RecurringType.IGNORED)
+        	if(recurringType != RecurringType.IGNORED){
         		taskName = (words.length == 1) ? "" :
         			taskName.substring(0, taskName.length() - lastWord.length());
+        	}
         	//-----------------------------------------------------------------
         	try {
         		tagSet = getTagsFromArgs(noDateMatcher.group("tagArguments"));
