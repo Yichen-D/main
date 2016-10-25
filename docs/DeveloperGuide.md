@@ -72,33 +72,46 @@ Each of the four components
 
 For example, the `Logic` component (see the class diagram given below) defines it's API in the `Logic.java`
 interface and exposes its functionality using the `LogicManager.java` class.<br>
-<img src="images/LogicClassDiagram.png" width="800"><br>
+<img src="images/Logic.png" width="800"><br>
 
 The _Sequence Diagram_ below shows how the components interact for the scenario where the user issues the
-command `delete 3`.
+command `delete 1`.
 
-<img src="images\SDforDeletePerson.png" width="800">
+<img src="images/SD_Delete_Floating_Task.png" width="800">
 
->Note how the `Model` simply raises a `AddressBookChangedEvent` when the Address Book data are changed,
+>Note how the `Model` simply raises a `taskListChangedEvent` when the Task Master data are changed,
  instead of asking the `Storage` to save the updates to the hard disk.
 
 The diagram below shows how the `EventsCenter` reacts to that event, which eventually results in the updates
 being saved to the hard disk and the status bar of the UI being updated to reflect the 'Last Updated' time. <br>
-<img src="images\SDforDeletePersonEventHandling.png" width="800">
+
+<img src="images/SD_Update_Task.png" width="800">
 
 > Note how the event is propagated through the `EventsCenter` to the `Storage` and `UI` without `Model` having
   to be coupled to either of them. This is an example of how this Event Driven approach helps us reduce direct 
   coupling between components.
 
+The _Sequence Diagram_ below show how recurring tasks are handled when they are first added by the user into Happy Jim Task Master. 
+
+<img src="images/SD_add_recurring_tasks.png" width="800"><br>
+
+> Note task is a Task reference from the Model and thus any changes made in the RecurringTaskManager will mutate the values of the task.
+
+The _Sequence Diagram_ below show how recurring tasks have dates appended to them every startup of Happy Jim Task Master
+
+<img src="images/SD_update_recurring_tasks.png" width="800"><br>
+
+> Note that repeatingTasks is a reference to the UniqueTaskList from the TaskMaster. Any changes made to repeatingTasks in RecurringTaskManager will affect TaskMaster's version of UniqueTaskList.
+
 The sections below give more details of each component.
 
 ### UI component
 
-<img src="images/UiClassDiagram.png" width="800"><br>
+<img src="images/UI Component.png" width="800"><br>
 
 **API** : [`Ui.java`](../src/main/java/seedu/address/ui/Ui.java)
 
-The UI consists of a `MainWindow` that is made up of parts e.g.`CommandBox`, `ResultDisplay`, `PersonListPanel`,
+The UI consists of a `MainWindow` that is made up of parts e.g.`CommandBox`, `ResultDisplay`, `TaskListPanel`,
 `StatusBarFooter`, `BrowserPanel` etc. All these, including the `MainWindow`, inherit from the abstract `UiPart` class
 and they can be loaded using the `UiPartLoader`.
 
@@ -114,7 +127,7 @@ The `UI` component,
 
 ### Logic component
 
-<img src="images/LogicClassDiagram.png" width="800"><br>
+<img src="images/Logic.png" width="800"><br>
 
 **API** : [`Logic.java`](../src/main/java/seedu/address/logic/Logic.java)
 
@@ -125,34 +138,34 @@ The `UI` component,
 
 Given below is the Sequence Diagram for interactions within the `Logic` component for the `execute("delete 1")`
  API call.<br>
-<img src="images/DeletePersonSdForLogic.png" width="800"><br>
+<img src="images/SD_Delete_Floating_Interaction.png" width="800"><br>
 
 ### Model component
 
-<img src="images/ModelClassDiagram.png" width="800"><br>
+<img src="images/Model.png" width="800"><br>
 
 **API** : [`Model.java`](../src/main/java/seedu/address/model/Model.java)
 
 The `Model`,
 * stores a `UserPref` object that represents the user's preferences.
-* stores the Address Book data.
-* exposes a `UnmodifiableObservableList<ReadOnlyPerson>` that can be 'observed' e.g. the UI can be bound to this list
+* stores the Task Master data.
+* exposes a `UnmodifiableObservableList<ReadOnlyTaskComponent>` that can be 'observed' e.g. the UI can be bound to this list
   so that the UI automatically updates when the data in the list change.
 * does not depend on any of the other three components.
 
 ### Storage component
 
-<img src="images/StorageClassDiagram.png" width="800"><br>
+<img src="images/Storage.png" width="800"><br>
 
 **API** : [`Storage.java`](../src/main/java/seedu/address/storage/Storage.java)
 
 The `Storage` component,
 * can save `UserPref` objects in json format and read it back.
-* can save the Address Book data in xml format and read it back.
+* can save the Task Master data in xml format and read it back.
 
 ### Common classes
 
-Classes used by multiple components are in the `seedu.addressbook.commons` package.
+Classes used by multiple components are in the `seedu.taskmaster.commons` package.
 
 ## Implementation
 
@@ -201,16 +214,83 @@ We have two types of tests:
 
 1. **GUI Tests** - These are _System Tests_ that test the entire App by simulating user actions on the GUI. 
    These are in the `guitests` package.
+   
+   Currently, _Systems Tests_ have covered the basic functionalities of Happy Jim Task Master v0.1. 
+   Following form shows the more essential commands and corresponding testcases.
+   
+   1. _AddCommandTest_ 
+   
+   
+   | Case# | Event | Basis Path | Output |
+   | :---:   | ---  | --- | ---  |
+   | 1 | add floating task to existing task list `add eat with Hoon Meier` | 1 -> 2 | `New floating task added: eat with Hoon Meier Tags: ` |
+   | 2 | add floating task to existing task list  `add play with Ida Mueller` | 1 -> 2 | `New floating task added: play with Ida Mueller Tags: ` |
+   | 3 | add duplicate floating task to existing task master `add eat with Hoon Meier` | 1 | `This task already exists in the task list` |
+   | 4 | clear existing task list `clear` | 1 -> 2 | `Task list  has been cleared!` |
+   | 5 | add to empty task list `add take trash t/notUrgent` | 1 -> 2 | `New floating task added: take trash Tags: [notUrgent]` |
+   | 6 | invalid add command `adds Johnny` | 1 | `Unknown command` |
+   
+   2. _ClearCommandTest_ 
+   
+   
+   | Case# | Event | Basis Path | Output |
+   | :---:   | ---  | :---: | ---  |
+   | 1 | clear existing non-empty task list `clear` | 1 -> 2 | `Task list has been cleared!` |
+   | 2 | verify other commands can work after task list cleared `add eat with Hoon Meier` | 1 -> 2 | `New floating task added: eat with Hoon Meier Tags: ` |
+   | 3 | add duplicate floating task `delete 1` | 1 -> 2| `Deleted Task: eat with Hoon Meier Tags: ` |
+   | 4 | verify clear command works when the list is empty `clear` | 1 -> 2 | `Task list has been cleared!` |
+   
+   3. _CommandBoxTest_
+   
+   
+   | Case# | Event | Basis Path | Output |
+   | :---:   | ---  | :---: | ---  |
+   | 1 | command succeeds text cleared `add read book t/textBook t/weekly` | 1 -> 2 | `This task already exists in the task list` |
+   | 2 | command fails text stays `invalid command` | 1 | `Unknown Command` |
+   
+   4. _DeleteCommandTest_
+   
+   
+   | Case# | Event | Basis Path | Output |
+   | :---:   | ---  | :---: | ---  |
+   | 1 | delete the first in the list `delete 1` | 1 -> 2 | `Deleted Task: take trash Tags: [notUrgent]` |
+   | 2 | delete the last in the list `delete 6` | 1 -> 2 | `Deleted Task: visit George Best Tags: ` |
+   | 3 | delete from the middle of the list `delete 2` | 1 -> 2 | `Deleted Task: do homework Tags: ` |
+   | 4 | delete with invalid index `delete 51` | 1 | `The task index provided is invalid` |
+   
+   5. _FindCommandTest_ 
+   
+   
+   | Case# | Event | Basis Path | Output |
+   | :---:   | ---  | :---: | ---  |
+   | 1 | find in non-empty list with no results `find Mark` | 1 -> 2 | `0 tasks listed!` |
+   | 2 | find in non-empty list with multiple results `find read` | 1 -> 2 | `2 tasks listed!` |
+   | 3 | delete one result `delete 1` | 1 -> 2 | `Deleted Task: read book Tags: [textBook][weekly]` |
+   | 4 | find in non-empty list with one result `find read` | 1 -> 2 | `1 tasks listed!` |
+   | 5 | find in empty list `find Jean` | 1 -> 2 | `0 tasks listed!` |
+   | 6 | invalid find command `findgeorge` | 1 | `Unknown command` |
+   
   
 2. **Non-GUI Tests** - These are tests not involving the GUI. They include,
-   1. _Unit tests_ targeting the lowest level methods/classes. <br>
-      e.g. `seedu.address.commons.UrlUtilTest`
+   1. _Unit tests_ targeting the lowest level methods/classes. This includes, <br>
+      1. `seedu.taskmaster.commons.AppUtilTest`
+      2. `seedu.taskmaster.commons.ConfigUtilTest`
+      3. `seedu.taskmaster.commons.FileUtilTest`
+      4. `seedu.taskmaster.commons.JsonUtilTest`
+      5. `seedu.taskmaster.commons.StringUtilTest`
+      6. `seedu.taskmaster.commons.UrlUtilTest`
+      7. `seedu.taskmaster.commons.XmlUtilTest`
+      8. `seedu.taskmaster.model.UnmodifiableObservableListTest`
+      9. `seedu.taskmaster.commons.core.ConfigTest`
+      10. `seedu.taskmaster.commons.core.VersionTest`
    2. _Integration tests_ that are checking the integration of multiple code units 
-     (those code units are assumed to be working).<br>
-      e.g. `seedu.address.storage.StorageManagerTest`
+     (those code units are assumed to be working). This includes, <br>
+      1.  `seedu.taskmaster.storage.StorageManagerTest`
+      2. `seedu.taskmaster.storage.XmlTaskListStorageTest`
+      3. `seedu.taskmaster.storage.JsonUserPrefStorageTest`
    3. Hybrids of unit and integration tests. These test are checking multiple code units as well as 
       how the are connected together.<br>
-      e.g. `seedu.address.logic.LogicManagerTest`
+      e.g. `seedu.taskmaster.logic.LogicManagerTest`
   
 **Headless GUI Testing** :
 Thanks to the [TestFX](https://github.com/TestFX/TestFX) library we use,
@@ -241,7 +321,7 @@ Here are the steps to create a new release.
    
 ### Managing Dependencies
 
-A project often depends on third-party libraries. For example, Address Book depends on the
+A project often depends on third-party libraries. For example, Task Master depends on the
 [Jackson library](http://wiki.fasterxml.com/JacksonHome) for XML parsing. Managing these _dependencies_
 can be automated using Gradle. For example, Gradle can download the dependencies automatically, which
 is better than these alternatives.<br>
@@ -256,26 +336,138 @@ Priorities: High (must have) - `* * *`, Medium (nice to have)  - `* *`,  Low (un
 Priority | As a ... | I want to ... | So that I can...
 -------- | :-------- | :--------- | :-----------
 `* * *` | new user | see usage instructions | refer to instructions when I forget how to use the App
-`* * *` | user | add a new person |
-`* * *` | user | delete a person | remove entries that I no longer need
+`* * *` | new user | be prompted | because i don't know how to use the program
+`* * *` | new user | have a help screen | get used to the software quickly
+`* * *` | user | add a new task | to add a task to my schedule
+`* * *` | user | delete a task | remove entries that I no longer need
 `* * *` | user | find a person by name | locate details of persons without having to go through the entire list
-`* *` | user | hide [private contact details](#private-contact-detail) by default | minimize chance of someone else seeing them by accident
-`*` | user with many persons in the address book | sort persons by name | locate a person easily
-
-{More to be added}
+`* * *`	| user | view tasks for the day | keep track of the task to do
+`* * *`	| user | edit current tasks | change any mistakes
+`* * *`	| user | have a filter | find tasks related to the filter
+`* * *`	| user | block out time slots | reserve slots for tasks that are not confirmed yet
+`* * *`	| user | add tasks (include floating tasks)
+`* * *`	| user | delete the tasks | to remove existing tasks
+`* * *` | user | undo my operations | correct my mistakes
+`* * *`	| user | redo my operations | correct my mistakes 
+`* *` | user | tag my tasks | know what is the type of tasks
+`* *` | user | have recurring tasks | do weekly tasks easily
+`* *` | user | save my files in another location | choose where to save my tasks 
+`* *` | user | customize/add tags
+`*` | user | be able to integrate to google calendar | sync with google calendar
+`*` | user | archive the tasks
+`*` | user | be able to postpone a tasks
+`*` | user | be prompted to reschedule if i exceeded my tasks | 
+`*` | user | have autocomplete 	| be more productive
+`*` | user | have gui | to make it easier to use
+`*` | advanced user | customize the commands| to use it more easily
 
 ## Appendix B : Use Cases
 
-(For all use cases below, the **System** is the `AddressBook` and the **Actor** is the `user`, unless specified otherwise)
+(For all use cases below, the **System** is the `Happy Jim Task Manager` and the **Actor** is the `user`, unless specified otherwise)
 
-#### Use case: Delete person
+#### Use case: UC00 - Help
+
+**MSS**<br>
+1.User requests help<br>
+2.Happy Jim Task Manager shows all commands<br>
+Use case ends
+
+#### Use case: UC01 - Add floating Task
 
 **MSS**
 
-1. User requests to list persons
-2. AddressBook shows a list of persons
-3. User requests to delete a specific person in the list
-4. AddressBook deletes the person <br>
+1.User requests to add floating task<br>
+2.Happy Jim Task Manager shows added task <br>
+Use case ends
+
+**Extensions**
+
+1a. Invalid format
+
+> 1a1. Happy Jim Task Manager shows error message.<br>
+   Use case ends
+
+#### Use case: UC02 - Add non-floating Task
+
+**MSS**
+
+1.User requests to add non-floating task
+2.Happy Jim Task Manager shows added task <br>
+Use case ends
+
+**Extensions**
+
+1a. Invalid format
+
+> 1a1. Happy Jim Task Manager shows error message<br>
+  Use case ends
+
+#### Use case: UC03 - View Tasks
+
+**MSS**
+
+1. User request to view Tasks on a day
+2. Happy Jim Task Manager shows the Tasks of the day, Deadlines both incoming and for today and blocked out dates <br>
+Use case ends
+
+**Extensions**
+
+1a. Invalid format
+
+> 1a1. Happy Jim Task Manager shows error message
+   Use case ends
+
+2a. The list is empty
+
+> Use case ends
+
+#### Use case: UC04 - Find Tasks by keywords
+
+**MSS**
+
+1. User request to find a task by keywords
+2. Happy Jim Task Manager shows the results <br>
+
+**Extensions**
+
+1a. Invalid command
+
+> 1a1. Happy Jim Task Manager shows error message<br>
+  Use case ends
+
+2a. Task does not exist
+
+> Use case ends
+
+#### Use case: UC05 - Edit Task
+
+**MSS**
+
+1. User request to find Tasks(UC04) or view Tasks(UC03).
+2. Happy Jim Task Manager shows Tasks(UC04) or (UC03).
+3. User requests to edit a specific task by task_id
+4. Happy Jim Task Manager edits the person <br>
+Use case ends
+
+**Extensions**
+
+2a. The list is empty
+
+> Use case ends
+
+3a. Invalid command
+
+> 3a1. Happy Jim Task Manager shows error message <br>
+   Use case resumes at step 2
+
+#### Use case: UC06 - Delete Task
+
+**MSS**
+
+1. User request to find Tasks(UC04) or view Tasks(UC03).
+2. Happy Jim Task Manager shows Tasks(UC04) or (UC03).
+3. User requests to delete a specific task in the list
+4. Happy Jim Task Manager deletes the task <br>
 Use case ends.
 
 **Extensions**
@@ -284,21 +476,146 @@ Use case ends.
 
 > Use case ends
 
-3a. The given index is invalid
+3a. Invalid command
 
-> 3a1. AddressBook shows an error message <br>
+> 3a1. Happy Jim Task Manager shows an error message <br>
+  Use case resumes at step 2
+  
+#### Use case: UC07 - Archive Completed Task
+
+**MSS**
+
+1. User request to find Tasks(UC04) or view Tasks(UC03).
+2. Happy Jim Task Manager shows Tasks(UC04) or (UC03).
+3. User requests to archive a specific task in the list
+4. Happy Jim Task Manager archives the task <br>
+Use case ends.
+
+**Extensions**
+
+2a. The list is empty
+
+> Use case ends
+
+3a. Invalid command
+
+> 3a1. Happy Jim Task Manager shows an error message <br>
   Use case resumes at step 2
 
-{More to be added}
+#### Use case: UC09 - Block Timeslot
+
+**MSS**
+
+1. User requests to block timeslot
+2. Happy Jim Task Manager shows timeslot blocked
+Use case ends
+
+**Extensions**
+
+1a. Invalid command
+
+> 1a1. Happy Jim Task Manager shows error message<br>
+   Use case ends
+
+2a. Timeslot already occupied
+
+> 2a1. Happy Jim Task Manager shows error message<br>
+   Use case ends
+
+#### Use case: UC10 - Undo Command
+
+**MSS**
+
+1. User request to undo command
+2. Happy Jim Task Manager undo command
+3. Happy Jim Task Manager displays undone command<br>
+Use case ends
+
+**Extensions**
+
+1a. Invalid command
+
+> 1a1. Happy Jim Task Manager shows error message<br>
+   Use case ends
+
+2a. No commands to undo
+
+> Use case ends
+
+2b. Reach the maximum undo times
+
+> Use case ends
+
+#### Use case: UC11 - Redo Command
+
+**MSS**
+
+1. User request redo command
+2. Happy Jim Task Manager redo command
+3. Happy Jim Task Manager displays redone command
+Use case ends
+
+**Extensions**
+
+1a. Invalid command
+
+> 1a1. Happy Jim Task Manager shows error message
+   Use case ends
+
+2a. No commands to redo
+
+> Use case ends
+
+2b. Reach the maximum redo times
+
+> Use case ends
+
+#### Use case: UC12 - Change Directory
+
+**MSS**
+
+1. User request to change directory
+2. Happy Jim Task Manager displays the new directory path
+3. Happy Jim Task Manager saves data to the new path<br>
+Use case ends
+
+**Extensions**
+
+1a. Invalid command
+
+> 1a1. Happy Jim Task Manager shows error message<br>
+Use case ends
+
+1b. File Path does not exist
+
+> 1b1. Happy Jim Task Manager shows error message<br>
+Use case ends
+
+3a. Not enough file space
+
+> 3a1. Happy Jim Task Manager shows i/o message<br>
+Use case ends
+
+#### Use case: UC13 - Exit
+
+**MSS**
+
+1. User request to exit
+2. Happy Jim Task Manager closes and exits
+Use case ends
 
 ## Appendix C : Non Functional Requirements
 
-1. Should work on any [mainstream OS](#mainstream-os) as long as it has Java `1.8.0_60` or higher installed.
-2. Should be able to hold up to 1000 persons.
+1. Should work on any [mainstream OS](#mainstream-os) as long as it has Java 8 or higher installed.
+2. Should be able to hold up to 1000 tasks.
 3. Should come with automated unit tests and open source code.
 4. Should favor DOS style commands over Unix-style commands.
-
-{More to be added}
+5. Should not take more than 500ms to respond.
+6. Main functionalities should not require internet connection.
+7. Should not require an install wizard
+8. Should not contain any database
+9. Should be able to tell whether the day is valid. Eg. 30 feb is invalid.
+10. Should be able to handle cross-year tasks.
 
 ## Appendix D : Glossary
 
@@ -306,11 +623,66 @@ Use case ends.
 
 > Windows, Linux, Unix, OS-X
 
-##### Private contact detail
+##### Filter
 
-> A contact detail that is not meant to be shared with others
+> Search keywords
+ 
+##### Block time slots
+
+> Block time slots is able to be deleted like normal task
+
+##### Invalid Commands
+
+> Invalid commands includes invalid arguments
+
+##### Error message
+
+> Error message includes suggestion for correct command
+
+##### DATE
+
+> Date is in DD mm format e.g. 29 sep
+
+##### TIME
+
+> Time is in 12 hours format 12pm, 7am
 
 ## Appendix E : Product Survey
+Product Name | Strengths | Weaknesses
+---|---|---
+**Remember the Milk**|<li>Clean interface</li><li>Simple usage</li><li>Project hierachy</li><li>Handles multiple date/time formats</li> | <li>1 page of tasks: No scrolling</li><li>Heavily relies on mouse usage: not many keyboard shortcuts</li><li>No calendar display</li>
+**Wunderlist**|<li>Interface is elegant</li><li>Display updates in real time</li><li>Sound feedback</li><li>Manages recurring tasks</li><li>Sort by due date</li><li>Filter by date range</li>|	<li>Misleading icons and buttons</li><li>No clendar display</li><li>Does not open on startup</li><li>Deadline notification through email, not the app</li>
+**Google Calendar Quick Add**|	<li>Intuitive shortcuts and commands</li><li>Different command formats are acceptable</li><li>Clean interface</li><li>Task dependency cycles are detected when cyclic inputs are used</li>|	<li>No view/edit/delete/search</li><li>Rigid settings</li>
+**Todo.txt**|	<li>Search function works for phrases, case-insensitive flag like in google search to filter certain texts</li><li>Command history</li>| 	<li>Difficult setup</li><li>-h does not provide full list of commands</li><li>Tasks marked done are deleted permanently</li><li>Command formats are rigid</li><li>No undo of previous actions.</li><li>Too minimalistic, such as no time/date support</li>
+**Trello**|	<li>Cross-platform usage</li><li>Integrates with other calendars</li><li>Collaboration support</li><li>Hierachy of tasks</li>|<li>A lot of fields to fill in</li><li>Recurring tasks have to be manually added</li><li>One rigid view, no option for summary/overview/timeline views</li><li>Many features, which are not immediately apparent</li>
+**Apple Calendar**|	<li>Cross-platform support</li><li>Color-coding for tasks</li><li>Day, month and year view</li>|	<li>No collaboration</li><li>Rigid fields for adding</li>
+**S Planner**|	<li>Syncs to many calendar platforms</li><li>Google map support for locations</li><li>Supports recurring events</li><li>Collaboration support</li>|	<li>Mobile-only</li><li>Floating tasks only available in Agenda view</li><li>Many clicks required to add tasks</li>
+**Any.do**|	<li>Interface is clean and intuitive</li>	<li>Syncs between mobile devices and PC</li>	<li>Descriptions can be added to tasks</li>	<li>Support for recurring tasks</li>|	<li>Internet connection is required to access tasks</li><li>Fields need to be filled in to add tasks</li><li>Time/date is not easy to change</li><li>No alarm support</li>
+Remember the Milk | * Allows for recurring tasks | see usage instructions
+Strengths:<br>
+* Generally suitable for his requirements regarding scheduling events.<br>
+* And probably a database.<br>
+Weakness:<br>
+* The problem is this Google calendar prefer users to use mouse rather than keyboard.<br>
+* Also it requires online connection.<br>
+Any.do:<br>
+Strengths:<br>
+* Can sync across platforms.<br> 
+* Provide convenience service for scheduling.<br> 
+Weaknesses:<br>
+* Also prefers mouse.<br> 
+* Need an account.<br> 
+* Requires Internet connection.<br>
 
-{TODO: Add a summary of competing products}
+Calendar<br>
+Strengths:<br>
+* Separate tasks and calendar in one app<br>
+* Able to add task and tag them<br>
+* Able to add recurring tasks<br>
+* Able to add in tasks to calendar in one line using auto detect<br>
+* Able to view completed tasks<br>
+Weaknesses:<br>
+* Prefers touch input<br>
+
+
 

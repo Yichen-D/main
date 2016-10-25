@@ -1,12 +1,14 @@
 package seedu.address.ui;
 
 import com.google.common.eventbus.Subscribe;
+
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.control.SplitPane;
-import javafx.scene.control.TextField;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
+import seedu.address.commons.events.ui.FailedCommandAttemptedEvent;
 import seedu.address.commons.events.ui.IncorrectCommandAttemptedEvent;
 import seedu.address.logic.Logic;
 import seedu.address.logic.commands.*;
@@ -27,7 +29,7 @@ public class CommandBox extends UiPart {
     private Logic logic;
 
     @FXML
-    private TextField commandTextField;
+    private AutoCompleteTextField commandTextField;
     private CommandResult mostRecentResult;
 
     public static CommandBox load(Stage primaryStage, AnchorPane commandBoxPlaceholder,
@@ -45,6 +47,7 @@ public class CommandBox extends UiPart {
     }
 
     private void addToPlaceholder() {
+    	
         SplitPane.setResizableWithParent(placeHolderPane, false);
         placeHolderPane.getChildren().add(commandTextField);
         FxViewUtil.applyAnchorBoundaryParameters(commandPane, 0.0, 0.0, 0.0, 0.0);
@@ -80,13 +83,27 @@ public class CommandBox extends UiPart {
         resultDisplay.postMessage(mostRecentResult.feedbackToUser);
         logger.info("Result: " + mostRecentResult.feedbackToUser);
     }
+    
+    //@@author A0147967J-reused
+    public void handleNavigationChanged(String command) {
+        
+        previousCommandTest = command;
 
+        mostRecentResult = logic.execute(previousCommandTest);
+        resultDisplay.postMessage(mostRecentResult.feedbackToUser);
+        logger.info("Result: " + mostRecentResult.feedbackToUser);
+    }
+    
+    public void turnOffAutoComplete(){
+    	commandTextField.turnOn = false;
+    }
 
     /**
      * Sets the command box style to indicate a correct command.
      */
     private void setStyleToIndicateCorrectCommand() {
         commandTextField.getStyleClass().remove("error");
+        commandTextField.getStyleClass().remove("fail");
         commandTextField.setText("");
     }
 
@@ -94,6 +111,14 @@ public class CommandBox extends UiPart {
     private void handleIncorrectCommandAttempted(IncorrectCommandAttemptedEvent event){
         logger.info(LogsCenter.getEventHandlingLogMessage(event,"Invalid command: " + previousCommandTest));
         setStyleToIndicateIncorrectCommand();
+        restoreCommandText();
+    }
+    
+    //@@author A0147967J
+    @Subscribe
+    private void handleFailedCommandAttempted(FailedCommandAttemptedEvent event){
+        logger.info(LogsCenter.getEventHandlingLogMessage(event,"Failed command: " + previousCommandTest +"\n"));
+        setStyleToIndicateFailedCommand();
         restoreCommandText();
     }
 
@@ -110,5 +135,22 @@ public class CommandBox extends UiPart {
     private void setStyleToIndicateIncorrectCommand() {
         commandTextField.getStyleClass().add("error");
     }
+    
+    //@@author A0147967J
+    /**
+     * Sets the command box style to indicate a failed attempt
+     */
+    private void setStyleToIndicateFailedCommand() {
+        commandTextField.getStyleClass().add("fail");
+    }
+    
+    /**
+     * Returns the current style class the command box used for testing purpose.
+     * @return 
+     */
+    public ObservableList<String> getStyleClass(){
+    	return commandTextField.getStyleClass();
+    }
+    
 
 }

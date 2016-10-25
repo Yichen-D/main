@@ -7,7 +7,8 @@ import seedu.address.logic.commands.Command;
 import seedu.address.logic.commands.CommandResult;
 import seedu.address.logic.parser.Parser;
 import seedu.address.model.Model;
-import seedu.address.model.person.ReadOnlyPerson;
+import seedu.address.model.task.ReadOnlyTask;
+import seedu.address.model.task.TaskComponent;
 import seedu.address.storage.Storage;
 
 import java.util.logging.Logger;
@@ -20,10 +21,12 @@ public class LogicManager extends ComponentManager implements Logic {
 
     private final Model model;
     private final Parser parser;
+    private URManager urManager;
 
     public LogicManager(Model model, Storage storage) {
         this.model = model;
         this.parser = new Parser();
+        this.urManager = new URManager();
     }
 
     @Override
@@ -31,11 +34,14 @@ public class LogicManager extends ComponentManager implements Logic {
         logger.info("----------------[USER COMMAND][" + commandText + "]");
         Command command = parser.parseCommand(commandText);
         command.setData(model);
+        urManager.addToUndoQueue(model, command);
+        command.assignManager(urManager);
         return command.execute();
     }
 
     @Override
-    public ObservableList<ReadOnlyPerson> getFilteredPersonList() {
-        return model.getFilteredPersonList();
-    }
+    public ObservableList<TaskComponent> getFilteredTaskList() {
+        return model.getFilteredTaskComponentList();
+    }   
+    
 }

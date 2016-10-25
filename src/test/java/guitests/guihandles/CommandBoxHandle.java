@@ -1,8 +1,10 @@
 package guitests.guihandles;
 
 import guitests.GuiRobot;
+import javafx.collections.ObservableList;
+import javafx.scene.control.TextField;
 import javafx.stage.Stage;
-
+import seedu.address.ui.*;
 /**
  * A handle to the Command Box in the GUI.
  */
@@ -28,12 +30,16 @@ public class CommandBoxHandle extends GuiHandle{
     public void runCommand(String command) {
         enterCommand(command);
         pressEnter();
-        guiRobot.sleep(200); //Give time for the command to take effect
+        guiRobot.sleep(700); //Give time for the command to take effect
     }
 
     public HelpWindowHandle runHelpCommand() {
         enterCommand("help");
         pressEnter();
         return new HelpWindowHandle(guiRobot, primaryStage);
+    }
+    
+    public ObservableList<String> getStyleClass(){
+    	return ((TextField)guiRobot.lookup(COMMAND_INPUT_FIELD_ID).tryQuery().get()).getStyleClass();
     }
 }

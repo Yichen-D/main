@@ -2,7 +2,9 @@ package seedu.address.logic.commands;
 
 import seedu.address.commons.core.EventsCenter;
 import seedu.address.commons.core.Messages;
+import seedu.address.commons.events.ui.FailedCommandAttemptedEvent;
 import seedu.address.commons.events.ui.IncorrectCommandAttemptedEvent;
+import seedu.address.logic.URManager;
 import seedu.address.model.Model;
 
 /**
@@ -10,15 +12,16 @@ import seedu.address.model.Model;
  */
 public abstract class Command {
     protected Model model;
+    protected URManager urManager;
 
     /**
-     * Constructs a feedback message to summarise an operation that displayed a listing of persons.
+     * Constructs a feedback message to summarise an operation that displayed a listing of tasks.
      *
      * @param displaySize used to generate summary
      * @return summary message for persons displayed
      */
-    public static String getMessageForPersonListShownSummary(int displaySize) {
-        return String.format(Messages.MESSAGE_PERSONS_LISTED_OVERVIEW, displaySize);
+    public static String getMessageForTaskListShownSummary(int displaySize) {
+        return String.format(Messages.MESSAGE_TASKS_LISTED_OVERVIEW, displaySize);
     }
 
     /**
@@ -36,11 +39,26 @@ public abstract class Command {
     public void setData(Model model) {
         this.model = model;
     }
-
+    
     /**
      * Raises an event to indicate an attempt to execute an incorrect command
      */
     protected void indicateAttemptToExecuteIncorrectCommand() {
         EventsCenter.getInstance().post(new IncorrectCommandAttemptedEvent(this));
+    }
+    
+    //@@author A0147967J
+    /**
+     * Assigns an undo/redo manager to the command to manage undo/redo operation.
+     */
+    public void assignManager(URManager urManager) {
+        this.urManager = urManager;
+    }
+
+    /**
+     * Raises an event to indicate an attempt to execute a failed command
+     */
+    protected void indicateAttemptToExecuteFailedCommand() {
+        EventsCenter.getInstance().post(new FailedCommandAttemptedEvent(this));
     }
 }
