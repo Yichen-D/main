@@ -2,12 +2,12 @@ package guitests;
 
 import org.junit.Test;
 
-import seedu.address.model.task.TaskComponent;
-import seedu.address.testutil.TestTask;
-import seedu.address.testutil.TestUtil;
+import seedu.taskmaster.model.task.TaskOccurrence;
+import seedu.taskmaster.testutil.TestTask;
+import seedu.taskmaster.testutil.TestUtil;
 
 import static org.junit.Assert.assertTrue;
-import static seedu.address.logic.commands.DeleteCommand.MESSAGE_DELETE_TASK_SUCCESS;
+import static seedu.taskmaster.logic.commands.DeleteCommand.MESSAGE_DELETE_TASK_SUCCESS;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,6 +16,7 @@ public class DeleteCommandTest extends TaskMasterGuiTest {
 
     @Test
     public void delete() {
+        commandBox.runCommand("list"); //switch to all tasks first
 
         //delete the first in the list
         TestTask[] currentList = td.getTypicalTasks();
@@ -49,7 +50,7 @@ public class DeleteCommandTest extends TaskMasterGuiTest {
 
         commandBox.runCommand("delete " + targetIndexOneIndexed);
 
-        List<TaskComponent> componentList = new ArrayList<TaskComponent>();
+        List<TaskOccurrence> componentList = new ArrayList<TaskOccurrence>();
         for(TestTask t : expectedRemainder) {
             componentList.addAll(t.getTaskDateComponent());
         }
@@ -57,7 +58,7 @@ public class DeleteCommandTest extends TaskMasterGuiTest {
         assertTrue(taskListPanel.isListMatching(TestUtil.convertTasksToDateComponents(expectedRemainder)));
 
         //confirm the result message is correct
-        assertResultMessage(String.format(MESSAGE_DELETE_TASK_SUCCESS, floatingTaskToDelete));
+        assertResultMessage(String.format(MESSAGE_DELETE_TASK_SUCCESS, floatingTaskToDelete.getLastAppendedComponent()));
     }
 
 }

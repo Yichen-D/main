@@ -9,7 +9,7 @@
 * [Appendix B: Use Cases](#appendix-b--use-cases)
 * [Appendix C: Non Functional Requirements](#appendix-c--non-functional-requirements)
 * [Appendix D: Glossary](#appendix-d--glossary)
-* [Appendix E : Product Survey](#appendix-e-product-survey)
+* [Appendix E : Product Survey](#appendix-e--product-survey)
 
 
 ## Setting up
@@ -72,12 +72,14 @@ Each of the four components
 
 For example, the `Logic` component (see the class diagram given below) defines it's API in the `Logic.java`
 interface and exposes its functionality using the `LogicManager.java` class.<br>
-<img src="images/Logic.png" width="800"><br>
+<img src="images/Logic.png" width="600"><br>
 
 The _Sequence Diagram_ below shows how the components interact for the scenario where the user issues the
 command `delete 1`.
 
-<img src="images/SD_Delete_Floating_Task.png" width="800">
+<!-- @@author A0135782Y-->
+<img src="images/SD_Delete_Floating_Task.png" width="600">
+<!--@@author-->
 
 >Note how the `Model` simply raises a `taskListChangedEvent` when the Task Master data are changed,
  instead of asking the `Storage` to save the updates to the hard disk.
@@ -85,33 +87,46 @@ command `delete 1`.
 The diagram below shows how the `EventsCenter` reacts to that event, which eventually results in the updates
 being saved to the hard disk and the status bar of the UI being updated to reflect the 'Last Updated' time. <br>
 
-<img src="images/SD_Update_Task.png" width="800">
+<!-- @@author A0135782Y-->
+<img src="images/SD_Update_Task.png" width="600">
+<!-- @@author-->
 
 > Note how the event is propagated through the `EventsCenter` to the `Storage` and `UI` without `Model` having
   to be coupled to either of them. This is an example of how this Event Driven approach helps us reduce direct 
   coupling between components.
 
+<!-- @@author A0135782Y-->
 The _Sequence Diagram_ below show how recurring tasks are handled when they are first added by the user into Happy Jim Task Master. 
 
-<img src="images/SD_add_recurring_tasks.png" width="800"><br>
+<img src="images/SD_add_recurring_tasks.png" width="600"><br>
 
 > Note task is a Task reference from the Model and thus any changes made in the RecurringTaskManager will mutate the values of the task.
 
 The _Sequence Diagram_ below show how recurring tasks have dates appended to them every startup of Happy Jim Task Master
 
-<img src="images/SD_update_recurring_tasks.png" width="800"><br>
+<img src="images/SD_update_recurring_tasks.png" width="600"><br>
 
 > Note that repeatingTasks is a reference to the UniqueTaskList from the TaskMaster. Any changes made to repeatingTasks in RecurringTaskManager will affect TaskMaster's version of UniqueTaskList.
 
+The _Activity Diagram_ below shows the flow when a Task is being added in TaskMaster.
+
+<img src="images/AD_add_task.png" width="600"><br>
+
+The _Object Oriented Model_ below shows how the problem of adding recurring tasks is handled.
+
+<img src="images/OOM_recurring_task.png" width="600"><br>
+
+<!--@@author-->
+<!--@@author A0147967J-->
 The _Sequence Diagram_ below shows how Happy Jim Task Master handles undo request from user.
 
-<img src="images/UndoSequenceDiagram.jpg" width="800"><br>
+<img src="images/UndoSequenceDiagram.jpg" width="600"><br>
 
 > Note that the context is a class that stores previous task master in the previous model before the target command executes.
 
 The _Class Diagram_ below shows the structure of how Happy Jim Task Master implements undo and redo operations.
 
-<img src="images/URManager.jpg" width="800"><br>
+<img src="images/URManager.jpg" width="600"><br>
 
 > Note that LogicManager maintains an URManager. UR manager contains two ArrayDeque, one for undo and the other for redo,  
 > to store the command and its context, specifically, the model before the command executes. 
@@ -120,12 +135,15 @@ The _Class Diagram_ below shows the structure of how Happy Jim Task Master imple
 > To maintain a good performance regarding to memory consumption, we restrict maximum undo/redo number to 3.
 > (Noted that it is possible to reach unlimited undo/redo by simply wiping off the limit number.)
 
+<!--@@author-->
 
 The sections below give more details of each component.
 
 ### UI component
 
-<img src="images/UI Component.png" width="800"><br>
+<!-- @@author A0135782Y-->
+<img src="images/UI Component.png" width="600"><br>
+<!-- @@author-->
 
 **API** : [`Ui.java`](../src/main/java/seedu/address/ui/Ui.java)
 
@@ -145,7 +163,7 @@ The `UI` component,
 
 ### Logic component
 
-<img src="images/Logic.png" width="800"><br>
+<img src="images/Logic.png" width="600"><br>
 
 **API** : [`Logic.java`](../src/main/java/seedu/address/logic/Logic.java)
 
@@ -156,11 +174,11 @@ The `UI` component,
 
 Given below is the Sequence Diagram for interactions within the `Logic` component for the `execute("delete 1")`
  API call.<br>
-<img src="images/SD_Delete_Floating_Interaction.png" width="800"><br>
+<img src="images/SD_Delete_Floating_Interaction.png" width="600"><br>
 
 ### Model component
 
-<img src="images/Model.png" width="800"><br>
+<img src="images/Model.png" width="600"><br>
 
 **API** : [`Model.java`](../src/main/java/seedu/address/model/Model.java)
 
@@ -169,11 +187,11 @@ The `Model`,
 * stores the Task Master data.
 * exposes a `UnmodifiableObservableList<ReadOnlyTaskComponent>` that can be 'observed' e.g. the UI can be bound to this list
   so that the UI automatically updates when the data in the list change.
-* does not depend on any of the other three components.
+* does not depend on any of the other three components.<br>
 
 ### Storage component
 
-<img src="images/Storage.png" width="800"><br>
+<img src="images/Storage.png" width="600"><br>
 
 **API** : [`Storage.java`](../src/main/java/seedu/address/storage/Storage.java)
 
@@ -229,6 +247,8 @@ Tests can be found in the `./src/test/java` folder.
 * See [UsingGradle.md](UsingGradle.md) for how to run tests using Gradle.
 
 We have two types of tests:
+
+<!--@@author A0147967J-->
 
 1. **GUI Tests** - These are _System Tests_ that test the entire App by simulating user actions on the GUI. 
    These are in the `guitests` package.
@@ -287,38 +307,54 @@ We have two types of tests:
    | 4 | find in non-empty list with one result `find read` | 1 -> 2 | `1 tasks listed!` |
    | 5 | find in empty list `find Jean` | 1 -> 2 | `0 tasks listed!` |
    | 6 | invalid find command `findgeorge` | 1 | `Unknown command` |
-   
+
+<!--@@author-->
   
 2. **Non-GUI Tests** - These are tests not involving the GUI. They include,
-   _Unit tests_ targeting the lowest level methods/classes. Below are some snippets, <br>
+   <!-- @@author A0135782Y-->
+   **Unit tests**. Below are some snippets, <br>
    
-   _Task.java_<br>
-   <img src="images/test_snippet_Task.PNG" width="800"><br>
+   _TaskTester.java_<br>
+   <img src="images/unit_test_TaskTester_A.png" width="600"><br>
    
-   _RecurringTaskManager.java_<br>
-   <img src="images/test_snippet_RecurringTaskManager.PNG" width="800"><br>
+   _TaskTesterHelper.java_<br>
+   <img src="images/unit_test_TaskTester_B.png" width="600"><br>
    
-   _Integration tests_ that are checking the integration of multiple code units 
-     (those code units are assumed to be working). Below are some snippets, <br>
+   > Note that dependency injection is used to ensure that only Task class is being tested.<br>
+   > The rest of the stubs are injected into the dependencies for Task.<br>
+   > This isolates Task from its dependencies and allows us to test only Task.
+   
+   **Integration tests**. Below are some snippets, <br>
 
-   _XmlTaskListStorage.java_<br>
-   <img src="images/test_snipper_XmlTaskListStorage.PNG" width="800"><br>
+   _RecurringTaskManagerTest.java_<br>
+   <img src="images/integration_test_RecurringTaskManager.png" width="600"><br>
    
-   Hybrids of unit and integration tests. These test are checking multiple code units as well as 
+   > Note recurring manager is being tested if it is correctly wired to it dependency.
+   > In this case the dependency is UniqueTaskList.
+   
+   _UniqueTaskListTest.java_<br>
+   <img src="images/integration_test_UniqueTaskList.png" width="600"><br>
+   
+   > Note that dependency injection is used to isolate Task. 
+   > Dependencies of Task is replaced with stubs that does nothing.
+   > This allows us to test if UniqueTaskList works together with Task.
+   
+   <!-- @@author A0147967J-->
+      Hybrids of unit and integration tests. These test are checking multiple code units as well as 
       how the are connected together. Below are some snippets,<br>
       e.g. `seedu.taskmaster.logic.LogicManagerTest`<br>
       In the `LogicManagerTest`, Happy Jim Task Master tests the logic it uses.<br>
       Typically, Happy Jim Task Master focuses on some boundary tests.<br>
-    
-	_LogicManagerTest.java_
-	<img src="images/test_snippet_LogicManagerTest.PNG" width="800"><br>
-      e.g. To `find` a task, for instance, `Test Task 1 by 20 oct 11am `,<br>
+	  e.g. To `find` a task, for instance, `Test Task 1 by 20 oct 11am `,<br>
       try execute <br>
       *`find by 20 oct 11am` --> exact boundary, task found;<br>
       *`find by 20 oct 10.59am` --> smaller boundary, lists nothing;<br>
       *`find by 20 oct 11.01am` --> lax boundary, task found.<br>
       > Note that this is a test not merely for `logic`, but also `parser` and `model`.<br>
-      
+	_
+	_LogicManagerTest.java_
+	<img src="images/test_snippet_LogicManagerTest.PNG" width="800"><br>
+    <!-- @@author-->  
   
 **Headless GUI Testing** :
 Thanks to the [TestFX](https://github.com/TestFX/TestFX) library we use,
@@ -689,6 +725,7 @@ Use case ends
 
 > Time is in 12 hours format 12pm, 7am
 
+<!-- @@author A0135782Y -->
 ## Appendix E : Product Survey
 Product Name | Strengths | Weaknesses
 ---|---|---

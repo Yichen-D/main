@@ -8,14 +8,16 @@ import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.rules.TestName;
 import org.testfx.api.FxToolkit;
-import seedu.address.TestApp;
-import seedu.address.commons.core.EventsCenter;
-import seedu.address.model.TaskMaster;
-import seedu.address.model.task.TaskComponent;
-import seedu.address.model.task.UniqueTaskList.TimeslotOverlapException;
-import seedu.address.testutil.TestUtil;
-import seedu.address.testutil.TypicalTestTasks;
-import seedu.address.ui.MyAgenda;
+
+import seedu.taskmaster.TestApp;
+import seedu.taskmaster.commons.core.EventsCenter;
+import seedu.taskmaster.model.TaskMaster;
+import seedu.taskmaster.model.task.TaskOccurrence;
+import seedu.taskmaster.model.task.UniqueTaskList.TimeslotOverlapException;
+import seedu.taskmaster.testutil.TestUtil;
+import seedu.taskmaster.testutil.TypicalTestTasks;
+import seedu.taskmaster.ui.MyAgenda;
+import seedu.taskmaster.ui.util.MyAgendaUtil;
 
 import java.util.ArrayList;
 import java.util.concurrent.TimeoutException;
@@ -113,7 +115,7 @@ public abstract class TaskMasterGuiTest {
     /**
      * Asserts the floatingTask shown in the card is same as the given floatingTask
      */
-    public void assertMatching(TaskComponent task, TaskCardHandle card) {
+    public void assertMatching(TaskOccurrence task, TaskCardHandle card) {
         assertTrue(TestUtil.compareCardAndTask(card, task));
     }
 
@@ -138,14 +140,14 @@ public abstract class TaskMasterGuiTest {
      * Asserts the expected task components are reflected in the agenda.
      * @param expected
      */
-    protected void assertIsAgendaMatching(ArrayList<TaskComponent> expectedShown){
+    protected void assertIsAgendaMatching(ArrayList<TaskOccurrence> expectedShown){
 		//Get the updated agenda
 		MyAgenda toBeChecked = browser.getMyAgenda();
 		//Checks the number of items in the agenda
 		assertEquals(expectedShown.size(), toBeChecked.appointments().size());
 		//Checks one-to-one match
-		for(TaskComponent t: expectedShown){
-			assertTrue(browser.isContained(TestUtil.getAppointment(t)));
+		for(TaskOccurrence t: expectedShown){
+			assertTrue(browser.isContained(MyAgendaUtil.getAppointment(t)));
 		}
 	}
 

@@ -52,7 +52,12 @@ allprojects {
         compile "com.fasterxml.jackson.core:jackson-databind:$jacksonVersion"
         compile "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jacksonDataTypeVersion"
         compile "com.google.guava:guava:$guavaVersion"
+        
         compile group: 'com.joestelmach', name: 'natty', version: '0.12'
+		compile group: 'org.antlr', name: 'antlr-runtime', version: '3.5.2'        
+		compile group: 'org.mnode.ical4j', name: 'ical4j', version: '1.0.7'
+		compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.21'
+
         
         compile group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.7'
   		compile group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.7'
@@ -67,19 +72,9 @@ allprojects {
         compile group: 'org.jfxtras', name: 'jfxtras-common', version: '8.0-r5'
         compile group: 'org.jfxtras', name: 'jfxtras-fxml', version: '8.0-r5'
 		compile group: 'org.jfxtras', name: 'jfxtras-controls', version: '8.0-r5'
-		
-		// https://mvnrepository.com/artifact/org.jfxtras/jfxtras-test-support
 		compile group: 'org.jfxtras', name: 'jfxtras-test-support', version: '8.0-r5'
-		
-		// https://mvnrepository.com/artifact/org.hamcrest/hamcrest-all
 		compile group: 'org.hamcrest', name: 'hamcrest-all', version: '1.3'
-
-		
-		// https://mvnrepository.com/artifact/org.jfxtras/jfxtras-labs
 		compile group: 'org.jfxtras', name: 'jfxtras-labs', version: '2.2-r4'
-		
-
-        
 
         testCompile "junit:junit:$junitVersion"
         testCompile "org.testfx:testfx-core:$testFxVersion"
@@ -102,10 +97,10 @@ allprojects {
     }
     
     shadowJar {
-        archiveName = "addressbook.jar"
+        archiveName = "happyjimtaskmaster.jar"
 
         manifest {
-            attributes "Main-Class": "seedu.address.MainApp"
+            attributes "Main-Class": "seedu.taskmaster.MainApp"
         }
 
         destinationDir = file("${buildDir}/jar/")
@@ -166,7 +161,7 @@ task guiTests(type: AddressBookTest) {
 
 
 task nonGuiTests(type: AddressBookTest) {
-    include 'seedu/address/**'
+    include 'seedu/taskmaster/**'
 
     jacoco {
         destinationFile = new File("${buildDir}/jacoco/test.exec")
